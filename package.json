@@ -1,0 +1,31 @@
+{
+  "name": "v8_obj",
+  "description": "Simple wrapped object example for v8.",
+  "main": "lib/v8_obj",
+  "scripts": {
+    "test": "mocha test/test-*",
+    "install": "node-pre-gyp install --fallback-to-build"
+  },
+  "binary": {
+    "module_name": "v8_obj",
+    "module_path": "./lib",
+    "host": "https://github.com/allenluce/v8_obj/releases/download/{version}"
+  },
+  "version": "0.0.1",
+  "author": "Allen Luce",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/allenluce/v8_obj.git"
+  },
+  "license": "UNLICENSED",
+  "gypfile": true,
+  "dependencies": {
+    "nan": "^2.2.0",
+    "node-pre-gyp": "^0.6.21"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^2.4.5",
+    "node-pre-gyp-github": "^1.1.2"
+  }
+}

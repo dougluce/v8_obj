@@ -18,12 +18,20 @@ describe('v8_obj', function () {
       const obj = new V8_Obj()
       obj['first'] = 'A Value'
       obj['second'] = 'A Value'
+      expect(obj[Symbol.iterator]).to.be.a('function')
+      let iter = obj[Symbol.iterator]()
+      expect(iter.next).to.be.a('function')
+      expect(iter.next()).to.deep.equal({ value: 'first', done: false })
+      expect(iter.next()).to.deep.equal({ value: 'second', done: false })
+      expect(iter.next()).to.deep.equal({ done: true })
+      const seen = {}
       let i = 0
       for (let val of obj) {
-        expect(val).to.equal('A Value')
+        seen[val] = 'seen'
         i++
       }
       expect(i).to.equal(2)
+      expect(seen).to.deep.equal({first: 'seen', second: 'seen'})
     })
   })
 })

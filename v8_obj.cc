@@ -14,15 +14,22 @@ private:
   static NAN_METHOD(next);
 };
 
+// To handle Node 10's deprecated non-isolate v8::String::Utf8Value version
+#if NODE_MODULE_VERSION >= NODE_9_0_MODULE_VERSION
+#define UTF8VALUE(value) (info.GetIsolate(), value)
+#else
+#define UTF8VALUE(value) (value)
+#endif
+
 NAN_PROPERTY_SETTER(My_Obj::Setter) {
-  v8::String::Utf8Value data(value);
-  v8::String::Utf8Value prop(property);
+  v8::String::Utf8Value data UTF8VALUE(value);
+  v8::String::Utf8Value prop UTF8VALUE(property);
   auto self = Nan::ObjectWrap::Unwrap<My_Obj>(info.This());
   self->contents.insert({ *prop, *data });
 }
 
 NAN_METHOD(My_Obj::next) {
-  auto self = static_cast<My_Obj*>(info.Data().As<v8::External>()->Value());
+  auto self = Nan::ObjectWrap::Unwrap<My_Obj>(info.Data().As<v8::Object>());
   bool done = self->iter == self->contents.end();
   auto obj = Nan::New<v8::Object>();
   Nan::Set(obj, Nan::New<v8::String>("done").ToLocalChecked(),
@@ -48,12 +55,12 @@ NAN_PROPERTY_GETTER(My_Obj::Getter) {
           Nan::Set(obj, Nan::New<v8::String>("next").ToLocalChecked(),
                    next_template->GetFunction());
           info.GetReturnValue().Set(obj);
-        }, Nan::New<v8::External>(self));
+        }, info.This());
       info.GetReturnValue().Set(iter_template->GetFunction());
     }
     return;
   }
-  v8::String::Utf8Value prop(property);
+  v8::String::Utf8Value prop UTF8VALUE(property);
   auto pair = self->contents.find(*prop);
   if (pair == self->contents.end())
     return;
@@ -61,6 +68,11 @@ NAN_PROPERTY_GETTER(My_Obj::Getter) {
 }
 
 NAN_METHOD(My_Obj::New) {
+  if (!info.IsConstructCall()) {
+    Nan::ThrowError("New must be called as a constructor.");
+    return;
+  }
+
   My_Obj *obj = new My_Obj();
   obj->Wrap(info.This());
   info.GetReturnValue().Set(info.This());
